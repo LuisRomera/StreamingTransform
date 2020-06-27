@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.luitro.streaming</groupId>
+    <artifactId>StreamingTransform</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+        <scala.binary.version>2.11</scala.binary.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-java</artifactId>
+            <version>1.10.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-streaming-java_2.12</artifactId>
+            <version>1.10.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-clients_2.12</artifactId>
+            <version>1.10.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+            <version>1.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+        <!-- kafka connector-->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-kafka_2.12</artifactId>
+            <version>1.10.1</version>
+        </dependency>
+        <!-- Connector twitter -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-twitter_2.12</artifactId>
+            <version>1.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <!-- Elasticsearch6 -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-elasticsearch6_2.12</artifactId>
+            <version>1.10.1</version>
+        </dependency>
+
+        <!-- gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.6</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <!-- Run shade goal on package phase -->
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.apache.flink:force-shading</exclude>
+                                    <exclude>com.google.code.findbugs:jsr305</exclude>
+<!--                                    <exclude>org.slf4j:*</exclude>-->
+<!--                                    <exclude>log4j:*</exclude>-->
+                                </excludes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <!-- Do not copy the signatures in the META-INF folder.
+                                    Otherwise, this might cause SecurityExceptions when using the JAR. -->
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.luitro.streaming.AplicactionInit</mainClass>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>reference.conf</resource>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+
+                <!-- This improves the out-of-the-box experience in Eclipse by resolving some warnings. -->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-shade-plugin</artifactId>
+                                        <versionRange>[3.1.1,)</versionRange>
+                                        <goals>
+                                            <goal>shade</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore/>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-compiler-plugin</artifactId>
+                                        <versionRange>[3.1,)</versionRange>
+                                        <goals>
+                                            <goal>testCompile</goal>
+                                            <goal>compile</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore/>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <!--    <build>-->
+    <!--        <plugins>-->
+    <!--            <plugin>-->
+    <!--                <groupId>org.apache.maven.plugins</groupId>-->
+    <!--                <artifactId>maven-compiler-plugin</artifactId>-->
+    <!--                <configuration>-->
+    <!--                    <source>8</source>-->
+    <!--                    <target>8</target>-->
+    <!--                </configuration>-->
+    <!--            </plugin>-->
+    <!--&lt;!&ndash;            <plugin>&ndash;&gt;-->
+    <!--&lt;!&ndash;                <artifactId>maven-assembly-plugin</artifactId>&ndash;&gt;-->
+    <!--&lt;!&ndash;                <version>3.3.0</version>&ndash;&gt;-->
+    <!--&lt;!&ndash;                <configuration>&ndash;&gt;-->
+    <!--&lt;!&ndash;                    <descriptorRefs>&ndash;&gt;-->
+    <!--&lt;!&ndash;                        <descriptorRef>jar-with-dependencies</descriptorRef>&ndash;&gt;-->
+    <!--&lt;!&ndash;                    </descriptorRefs>&ndash;&gt;-->
+    <!--&lt;!&ndash;                    <archive>&ndash;&gt;-->
+    <!--&lt;!&ndash;                        <manifest>&ndash;&gt;-->
+    <!--&lt;!&ndash;                            <addClasspath>true</addClasspath>&ndash;&gt;-->
+    <!--&lt;!&ndash;                            <mainClass>es.luis.flink.AplicactionInit</mainClass>&ndash;&gt;-->
+    <!--&lt;!&ndash;                        </manifest>&ndash;&gt;-->
+    <!--&lt;!&ndash;                    </archive>&ndash;&gt;-->
+    <!--&lt;!&ndash;                    <transformers>&ndash;&gt;-->
+    <!--&lt;!&ndash;                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">&ndash;&gt;-->
+    <!--&lt;!&ndash;                            <mainClass>com.ink.FlinkLambdaTest.FlinkToLambda</mainClass>&ndash;&gt;-->
+    <!--&lt;!&ndash;                        </transformer>&ndash;&gt;-->
+    <!--&lt;!&ndash;                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">&ndash;&gt;-->
+    <!--&lt;!&ndash;                            <resource>reference.conf</resource>&ndash;&gt;-->
+    <!--&lt;!&ndash;                        </transformer>&ndash;&gt;-->
+    <!--&lt;!&ndash;                    </transformers>&ndash;&gt;-->
+    <!--&lt;!&ndash;                    <relocations>&ndash;&gt;-->
+    <!--&lt;!&ndash;                        <relocation>&ndash;&gt;-->
+    <!--&lt;!&ndash;                            <pattern>org.codehaus.plexus.util</pattern>&ndash;&gt;-->
+    <!--&lt;!&ndash;                            <shadedPattern>org.shaded.plexus.util</shadedPattern>&ndash;&gt;-->
+    <!--&lt;!&ndash;                            <excludes>&ndash;&gt;-->
+    <!--&lt;!&ndash;                                <exclude>org.codehaus.plexus.util.xml.Xpp3Dom</exclude>&ndash;&gt;-->
+    <!--&lt;!&ndash;                                <exclude>org.codehaus.plexus.util.xml.pull.*</exclude>&ndash;&gt;-->
+    <!--&lt;!&ndash;                            </excludes>&ndash;&gt;-->
+    <!--&lt;!&ndash;                        </relocation>&ndash;&gt;-->
+    <!--&lt;!&ndash;                    </relocations>&ndash;&gt;-->
+
+    <!--&lt;!&ndash;                </configuration>&ndash;&gt;-->
+    <!--&lt;!&ndash;                <executions>&ndash;&gt;-->
+    <!--&lt;!&ndash;                    <execution>&ndash;&gt;-->
+    <!--&lt;!&ndash;                        <id>make-assembly</id> &lt;!&ndash; this is used for inheritance merges &ndash;&gt;&ndash;&gt;-->
+    <!--&lt;!&ndash;                        <phase>package</phase> &lt;!&ndash; bind to the packaging phase &ndash;&gt;&ndash;&gt;-->
+    <!--&lt;!&ndash;                        <goals>&ndash;&gt;-->
+    <!--&lt;!&ndash;                            <goal>single</goal>&ndash;&gt;-->
+    <!--&lt;!&ndash;                        </goals>&ndash;&gt;-->
+    <!--&lt;!&ndash;                    </execution>&ndash;&gt;-->
+    <!--&lt;!&ndash;                </executions>&ndash;&gt;-->
+    <!--&lt;!&ndash;            </plugin>&ndash;&gt;-->
+    <!--            <plugin>-->
+    <!--                <groupId>org.apache.maven.plugins</groupId>-->
+    <!--                <artifactId>maven-shade-plugin</artifactId>-->
+    <!--                <version>3.1.0</version>-->
+    <!--                <executions>-->
+    <!--                    <execution>-->
+    <!--                        <phase>package</phase>-->
+    <!--                        <goals>-->
+    <!--                            <goal>shade</goal>-->
+    <!--                        </goals>-->
+    <!--                        <configuration>-->
+    <!--                                <manifest>-->
+    <!--                                    <addClasspath>true</addClasspath>-->
+    <!--                                    <mainClass>es.luis.flink.AplicactionInit</mainClass>-->
+    <!--                                </manifest>-->
+    <!--                            <transformers>-->
+    <!--                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
+    <!--                                    <mainClass>com.ink.FlinkLambdaTest.FlinkToLambda</mainClass>-->
+    <!--                                </transformer>-->
+    <!--                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">-->
+    <!--                                    <resource>reference.conf</resource>-->
+    <!--                                </transformer>-->
+    <!--                            </transformers>-->
+    <!--                            <relocations>-->
+    <!--                                <relocation>-->
+    <!--                                    <pattern>org.codehaus.plexus.util</pattern>-->
+    <!--                                    <shadedPattern>org.shaded.plexus.util</shadedPattern>-->
+    <!--                                    <excludes>-->
+    <!--                                        <exclude>org.codehaus.plexus.util.xml.Xpp3Dom</exclude>-->
+    <!--                                        <exclude>org.codehaus.plexus.util.xml.pull.*</exclude>-->
+    <!--                                    </excludes>-->
+    <!--                                </relocation>-->
+    <!--                            </relocations>-->
+    <!--                        </configuration>-->
+    <!--                    </execution>-->
+    <!--                </executions>-->
+    <!--            </plugin>-->
+    <!--        </plugins>-->
+    <!--    </build>-->
+
+</project>
